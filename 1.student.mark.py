@@ -3,13 +3,14 @@ import os
 def input_info():
     stuID, name, dob = "", "", ""
     stuID = input("Enter student ID: ")
-    if checkDuplicate(stuID): 
+    if checkDuplicate(stuID):
         print("Duplicate student ID!")
+        input_info()
         return stuID, name, dob
     else: None
     name = input("Enter student name: ")
     dob = input("Enter student's birthday: ")
-    return name, stuID, dob
+    return stuID, name, dob
 
 def check_for_Delimiter():
     if(os.path.exists("./student.csv")):
@@ -36,15 +37,18 @@ def checkDuplicate(stuID:str, delimiter:str = ","):
     return False
 
 
-def consecutive_input():
-    n = int(input("Enter number of students: "))
+def consecutive_input(n:int):
     list_of_students = []
     for i in range(n):
-        list_of_students.append(input_info())
+        stuID,name, dob = input_info()
+        if i > 0 and stuID == list_of_students[i-1][0]:
+            print("Duplicate student ID! Please re-enter!")
+            consecutive_input(n-i)
+        list_of_students.append([name, stuID, dob])
     return list_of_students
 
 
-def write_info(name, stuID, dob, delimiter):
+def write_info(name:str, stuID:str, dob:str, delimiter:str = ","):
     if(os.path.exists("./student.csv")):
         with open("./student.csv", "a") as f:
             ls = [stuID, name, dob]
@@ -57,15 +61,20 @@ def write_info(name, stuID, dob, delimiter):
             ls = [stuID, name, dob]
             f.write(delimiter.join(ls) + "\n")
 
-def disp(delimiter):
-    with open("./student.csv", "r") as f:
-        for line in f:
-            print(line.replace(delimiter, "\t"))
+def disp(delimiter:str = ","):
+    if(os.path.exists("./student.csv")):
+        with open("./student.csv", "r") as f:
+            for line in f:
+                print(line.replace(delimiter, "\t"))
+    else:
+        print("File students.csv not found in current working directory, creating one...")
+        with open("./student.csv", "w") as f:
+            ls = ["Student ID", "Name", "Date of Birth"]
+            f.write(delimiter.join(ls)+ "\n")
 
 def main():
-    global delimiter
-    delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
-    choice = ["Input student's information", "Print student's information", "Set delimiter", "Enter with specify an amount of students" ,"Exit"]
+    delimiter = check_for_Delimiter() if check_for_Delimiter() else ","
+    choice = ["Input student's information", "Print student's information", "Set delimiter", "Enter with specify an amount of students","Remove data" ,"Exit"]
     yn = "y"
     while(yn == "y"):
         for i in range(len(choice)):
@@ -73,7 +82,7 @@ def main():
         print("Please choose an option: ", end="")
         option = int(input())
         if(option == 1):
-            name, stuID, dob = input_info()
+            stuID, name, dob = input_info()
             None if checkDuplicate(stuID) else write_info(name, stuID, dob, delimiter)
         elif(option == 2):
             disp(delimiter)
@@ -84,13 +93,20 @@ def main():
             else:
                 delimiter = input("Please input the delimiter (default is ,): ")
         elif(option == 4):
-            list_of_students = consecutive_input()
+            amount = int(input("Please input the amount of students: "))
+            list_of_students = consecutive_input(amount)
             for i in range(len(list_of_students)):
                 if(checkDuplicate(list_of_students[i][1]) == False):
                     write_info(list_of_students[i][0], list_of_students[i][1], list_of_students[i][2], delimiter)
                 else:
                     print("Duplicate student ID!")
         elif(option == 5):
+            if os.path.exists("./student.csv"):
+                os.remove("./student.csv")
+                print("The file has been removed!")
+            else:
+                print("The file does not exist!")
+        elif(option == 6):
             yn = "n"
         else:
             print("Invalid option")
