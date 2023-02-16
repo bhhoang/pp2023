@@ -1,16 +1,27 @@
 import os
 
+
 def input_info():
-    stuID, name, dob = "", "", ""
+    courseId, courseName, stuID, name, dob = "", "", "","",""
     stuID = input("Enter student ID: ")
     if checkDuplicate(stuID):
-        print("Duplicate student ID!")
-        input_info()
-        return stuID, name, dob
-    else: None
-    name = input("Enter student name: ")
-    dob = input("Enter student's birthday: ")
-    return stuID, name, dob
+        choice = print("Duplicate student ID found! Do you want to continue?[y/n]")
+        if choice.lower() == y:
+            name = input("Enter student name: ")
+            dob = input("Enter date of birth: ")
+            courseId = input("Enter course ID: ")
+            courseName = input("Enter course name: ")
+            return stuID, name, dob, courseId, courseName
+        elif choice.lower() == n:
+            return None
+    else:
+        name = input("Enter student name: ")
+        dob = input("Enter student date of birth: ")
+        courseId = input("Enter course ID: ")
+        courseName = input("Enter course name: ")
+        return stuID, name, dob, courseId, courseName
+
+
 
 def check_for_Delimiter():
     if(os.path.exists("./student.csv")):
@@ -37,11 +48,11 @@ def checkDuplicate(stuID:str, delimiter:str = ","):
     return False
 
 def lookforLongest(delimiter:str = ","):
-    longest = [0,0,0]
+    longest = [0,0,0,0,0]
     with open("./student.csv", "r") as f:
         for line in f:
             args = line.split(delimiter)
-            for i in range(3):
+            for i in range(len(longest)):
                 if len(args[i]) > longest[i]:
                     longest[i] = len(args[i])
     return longest
@@ -50,25 +61,26 @@ def lookforLongest(delimiter:str = ","):
 def consecutive_input(n:int):
     list_of_students = []
     for i in range(n):
-        stuID,name, dob = input_info()
+        stuID,name, dob,courseId,courseName = input_info()
         if i > 0 and stuID == list_of_students[i-1][0]:
             print("Duplicate student ID! Please re-enter!")
+
             consecutive_input(n-i)
-        list_of_students.append([name, stuID, dob])
+        list_of_students.append([name, stuID, dob,courseId,courseName])
     return list_of_students
 
 
-def write_info(name:str, stuID:str, dob:str, delimiter:str = ","):
+def write_info(name:str, stuID:str, dob:str,courseID:str, courseName:str, delimiter:str = ","):
     if(os.path.exists("./student.csv")):
         with open("./student.csv", "a") as f:
-            ls = [stuID, name, dob]
+            ls = [stuID, name, dob,courseName,courseName]
             f.write(delimiter.join(ls) + "\n")
     else:
         print("File students.csv not found in current working directory, creating one...")
         with open("./student.csv", "w") as f:
-            ls = ["Student ID", "Name", "Date of Birth"]
+            ls = ["Student ID", "Name", "Date of Birth","Course ID","Course Name"]
             f.write(delimiter.join(ls)+ "\n")
-            ls = [stuID, name, dob]
+            ls = [stuID, name, dob,courseID,courseName]
             f.write(delimiter.join(ls) + "\n")
 
 def disp(delimiter:str = ","):
@@ -79,15 +91,15 @@ def disp(delimiter:str = ","):
             first_line = f.readline()
             args = first_line.split(delimiter)
             #remove the newline character
-            args[2] = args[2][:-1]
-            print("+ "+"-"*(longest[0]+longest[1]+longest[2]+18)+"+")
-            print ("| " + args[0].ljust(longest[0]+4) + " | " + args[1].ljust(longest[1]+4) + " | " + args[2].ljust(longest[2]+4)+ "|")
-            print ("+ " + "-"*(longest[0]+4) + " + " + "-"*(longest[1] + 4) + " + " + "-"*(longest[2]+4) + "+")
+            args[4] = args[4][:-1]
+            print("+ "+"-"*(longest[0]+longest[1]+longest[2]+longest[3]+longest[4]+31)+" +")
+            print ("| " + args[0].ljust(longest[0]+4) + " | " + args[1].ljust(longest[1]+4) + " | " + args[2].ljust(longest[2]+4)+ " | " + args[3].ljust(longest[3]+4) + " | " + args[4].ljust(longest[4]+4)+"|")
+            print ("+ " + "-"*(longest[0]+4) + " + " + "-"*(longest[1] + 4) + " + " + "-"*(longest[2]+4) + " + " + "-"*(longest[3]+4) + " + " + "-"*(longest[4]+4))
             for line in f:
                 args = line.split(delimiter)
-                args[2] = args[2][:-1]
-                print ("| " + args[0].ljust(longest[0]+4) + " | " + args[1].ljust(longest[1]+4) + " | " + args[2].ljust(longest[2]+4)+ "|")
-                print("+ "+"-"*(longest[0]+longest[1]+longest[2]+18)+"+")
+                args[4] = args[4][:-1]
+                print ("| " + args[0].ljust(longest[0]+4) + " | " + args[1].ljust(longest[1]+4) + " | " + args[2].ljust(longest[2]+4)+ " | " + args[3].ljust(longest[3]+4) + " | " + args[4].ljust(longest[4]+4)+"|")
+                print("+ "+"-"*(longest[0]+longest[1]+longest[2]+longest[3]+longest[4]+31)+" +")
     else:
         print("File students.csv not found in current working directory, creating one...")
         with open("./student.csv", "w") as f:
@@ -104,8 +116,8 @@ def main():
         print("Please choose an option: ", end="")
         option = input()
         if(option == "1"):
-            stuID, name, dob = input_info()
-            None if checkDuplicate(stuID) else write_info(name, stuID, dob, delimiter)
+            stuID, name, dob, courseID,courseName = input_info()
+            None if checkDuplicate(stuID) else write_info(name, stuID, dob,courseID,courseName, delimiter)
         elif(option == "2"):
             disp(delimiter)
         elif(option == "3"):
@@ -119,7 +131,7 @@ def main():
             list_of_students = consecutive_input(amount)
             for i in range(len(list_of_students)):
                 if(checkDuplicate(list_of_students[i][1]) == False):
-                    write_info(list_of_students[i][0], list_of_students[i][1], list_of_students[i][2], delimiter)
+                    write_info(list_of_students[i][0], list_of_students[i][1], list_of_students[i][2], list_of_students[i][3],list_of_students[i][4], delimiter)
                 else:
                     print("Duplicate student ID!")
         elif(option == "5"):
@@ -134,4 +146,9 @@ def main():
             print("Invalid option")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nProgram has been terminated!")
+    finally:
+        print("Goodbye!")
