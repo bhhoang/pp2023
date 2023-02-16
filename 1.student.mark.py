@@ -1,13 +1,23 @@
 import os
 
+#This function actually get and return both name and date of birth
+def getName(stuID:str, delimiter:str = ","):
+    if(os.path.exists("./student.csv") == False):
+        return None
+    with open("./student.csv", "r") as f:
+        for line in f:
+            args = line.split(delimiter)
+            if args[0] == stuID:
+                return args[1], args[2]
+    return None
+
 def input_info():
-    courseId, courseName, stuID, name, dob,courseMark = "", "", "","","",""
+    courseId, courseName, stuID, courseMark = "","","",""
     stuID = input("Enter student ID: ")
     if checkDuplicate(stuID):
-        choice = print("Duplicate student ID found! Do you want to continue?[y/n]")
+        choice = input("Duplicate student ID found! Do you want to continue?[y/n]")
         if choice.lower() == "y":
-            name = input("Enter student name: ")
-            dob = input("Enter date of birth: ")
+            name,dob = getName(stuID)
             courseId = input("Enter course ID: ")
             courseName = input("Enter course name: ")
             courseMark = input("Enter course mark: ")
@@ -21,8 +31,6 @@ def input_info():
         courseName = input("Enter course name: ")
         courseMark = input("Enter course mark: ")
         return stuID, name, dob, courseId, courseName, courseMark
-
-
 
 def check_for_Delimiter():
     if(os.path.exists("./student.csv")):
@@ -93,7 +101,7 @@ def disp(delimiter:str = ","):
             args[5] = args[5][:-1]
             print("+ "+"-"*(longest[0]+longest[1]+longest[2]+longest[3]+longest[4]+longest[5]+39)+" +")
             print ("| " + args[0].ljust(longest[0]+4) + " | " + args[1].ljust(longest[1]+4) + " | " + args[2].ljust(longest[2]+4)+ " | " + args[3].ljust(longest[3]+4) + " | " + args[4].ljust(longest[4]+4)+" | " + args[5].ljust(longest[5]+4) + " |")
-            print ("+ " + "-"*(longest[0]+4) + " + " + "-"*(longest[1] + 4) + " + " + "-"*(longest[2]+4) + " + " + "-"*(longest[3]+4) + " + " + "-"*(longest[4]+4) + "-"*(longest[5]+4))
+            print ("+ " + "-"*(longest[0]+4) + " + " + "-"*(longest[1] + 4) + " + " + "-"*(longest[2]+4) + " + " + "-"*(longest[3]+4) + " + " + "-"*(longest[4]+4)+ " + " + "-"*(longest[5]+4)+" +")
             for line in f:
                 args = line.split(delimiter)
                 #draw table border and datas
@@ -107,10 +115,30 @@ def disp(delimiter:str = ","):
             f.write(delimiter.join(ls)+ "\n")
     print("\n\n\n")
 
+def inspectStudent(stuID:str, delimiter:str = ","):
+    print("\n\n\n")
+    if(os.path.exists("./student.csv")):
+        name,dob = getName(stuID)
+        print("+"+"-"*30+"+")
+        print("Student ID: " + stuID)
+        print("Name: " + name + "|")
+        print("Date of Birth: " + dob)
+        print("+"+"-"*30+"+")
+        with open("./student.csv", "r") as f:
+            for line in f:
+                args = line.split(delimiter)
+                if args[0] == stuID:
+                    print("|")
+                    print(f"+----Course Name: {args[4]}")
+                    print("|\t|")
+                    print(f"|\t+----Course ID: {args[3]}")
+                    print("|\t\t|")
+                    print(f"|\t\t+----Course Mark: {args[5]}", end="")
+    print("\n\n\n")
 
 def main():
     delimiter = check_for_Delimiter() if check_for_Delimiter() else ","
-    choice = ["Input student's information", "Print student's information", "Set delimiter", "Enter with specify an amount of students","Remove data" ,"Exit"]
+    choice = ["Input student's information", "Print student's information", "Set delimiter", "Enter with specify an amount of students","Remove data" ,"Inspect Student", "Exit"]
     yn = "y"
     while(yn == "y"):
         for i in range(len(choice)):
@@ -119,7 +147,7 @@ def main():
         option = input()
         if(option == "1"):
             stuID, name, dob, courseID,courseName, courseMark = input_info()
-            None if checkDuplicate(stuID) else write_info(name, stuID, dob,courseID,courseName,courseMark, delimiter)
+            write_info(name, stuID, dob,courseID,courseName,courseMark, delimiter)
         elif(option == "2"):
             disp(delimiter)
         elif(option == "3"):
@@ -133,7 +161,7 @@ def main():
             list_of_students = consecutive_input(amount)
             for i in range(len(list_of_students)):
                 if(checkDuplicate(list_of_students[i][1]) == False):
-                    write_info(list_of_students[i][0], list_of_students[i][1], list_of_students[i][2], list_of_students[i][3],list_of_students[i][4],list_of_students[5], delimiter)
+                    write_info(list_of_students[i][0], list_of_students[i][1], list_of_students[i][2], list_of_students[i][3],list_of_students[i][4],list_of_students[i][5], delimiter)
                 else:
                     print("Duplicate student ID!")
         elif(option == "5"):
@@ -143,6 +171,9 @@ def main():
             else:
                 print("The file does not exist!")
         elif(option == "6"):
+            stuID = input("Please input the student ID: ")
+            inspectStudent(stuID, delimiter)
+        elif(option == "7"):
             yn = "n"
         else:
             print("Invalid option")
