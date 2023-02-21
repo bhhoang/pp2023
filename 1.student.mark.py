@@ -1,5 +1,6 @@
 import os
 
+
 #This function actually get and return both name and date of birth
 def getName(stuID:str, delimiter:str = ","):
     if(os.path.exists("./student.csv") == False):
@@ -11,20 +12,31 @@ def getName(stuID:str, delimiter:str = ","):
                 return args[1], args[2]
     return None
 
+#Check duplicate course
+def dupcourseCheck(stuID:str, courseId:str, delimiter:str = ","):
+    if(os.path.exists("./student.csv") == False):
+        return False
+    with open("./student.csv", "r") as f:
+        for line in f:
+            args = line.split(delimiter)
+            if args[0] == stuID and args[3] == courseId:
+                return True
+    return False
+
 # Single input student block
 def input_info():
     courseId, courseName, stuID, courseMark = "","","",""
     stuID = input("Enter student ID: ")
+    delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
     if checkDuplicate(stuID):
-        choice = input("Duplicate student ID found! Do you want to continue?[y/n]")
-        if choice.lower() == "y":
-            name,dob = getName(stuID)
-            courseId = input("Enter course ID: ")
-            courseName = input("Enter course name: ")
-            courseMark = input("Enter course mark: ")
-            return stuID, name, dob, courseId, courseName, courseMark
-        elif choice.lower() == "n":
-            return None
+        name,dob = getName(stuID)
+        courseId = input("Enter course ID: ")
+        while dupcourseCheck(stuID,courseId,delimiter):
+            print("Duplicate course ID")
+            courseId = input("Re-enter course ID: ")
+        courseName = input("Enter course name: ")
+        courseMark = input("Enter course mark: ")
+        return stuID, name, dob, courseId, courseName, courseMark
     else:
         name = input("Enter student name: ")
         dob = input("Enter student date of birth: ")
@@ -59,6 +71,7 @@ def checkDuplicate(stuID:str, delimiter:str = ","):
                 return True
     return False
 
+
 #Get the longest length of string in each column
 def lookforLongest(delimiter:str = ","):
     longest = [0,0,0,0,0,0]
@@ -73,14 +86,13 @@ def lookforLongest(delimiter:str = ","):
 #Serial input like since the practical asked for it
 def consecutive_input(n:int):
     list_of_students = []
+    delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
     for i in range(n):
-        stuID,name, dob,courseId,courseName, courseMark = input_info()
-        while(i > 0 and stuID == list_of_students[i-1][0]):
-            print("WARN: Student ID already exists")
-        list_of_students.append([stuID,name, dob,courseId,courseName, courseMark])
-    return list_of_students
+        stuID, name, dob, courseId, courseName, courseMark = input_info()
+        list_of_students.append([stuID, name, dob, courseId, courseName, courseMark])
+        write_info(list_of_students[i][1], list_of_students[i][0], list_of_students[i][2], list_of_students[i][3], list_of_students[i][4], list_of_students[i][5], delimiter)
 
-#Write to file
+#Write to file student.csv
 def write_info(name:str, stuID:str, dob:str,courseID:str, courseName:str, courseMark:str, delimiter:str = ","):
     if(os.path.exists("./student.csv")):
         with open("./student.csv", "a") as f:
@@ -166,12 +178,7 @@ def main():
                 delimiter = input("Please input the delimiter (default is ,): ")
         elif(option == "4"):
             amount = int(input("Please input the amount of students: "))
-            list_of_students = consecutive_input(amount)
-            for i in range(len(list_of_students)):
-                if(checkDuplicate(list_of_students[i][1]) == False):
-                    write_info(list_of_students[i][0], list_of_students[i][1], list_of_students[i][2], list_of_students[i][3],list_of_students[i][4],list_of_students[i][5], delimiter)
-                else:
-                    print("Duplicate student ID!")
+            consecutive_input(amount)
         elif(option == "5"):
             if os.path.exists("./student.csv"):
                 os.remove("./student.csv")
