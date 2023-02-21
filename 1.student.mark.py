@@ -11,6 +11,7 @@ def getName(stuID:str, delimiter:str = ","):
                 return args[1], args[2]
     return None
 
+# Single input student block
 def input_info():
     courseId, courseName, stuID, courseMark = "","","",""
     stuID = input("Enter student ID: ")
@@ -32,6 +33,7 @@ def input_info():
         courseMark = input("Enter course mark: ")
         return stuID, name, dob, courseId, courseName, courseMark
 
+#Check delimiter in file
 def check_for_Delimiter():
     if(os.path.exists("./student.csv")):
         with open("./student.csv", "r") as f:
@@ -46,6 +48,7 @@ def check_for_Delimiter():
     else:
         return False
 
+#Check duplicate student
 def checkDuplicate(stuID:str, delimiter:str = ","):
     if(os.path.exists("./student.csv") == False):
         return False
@@ -56,6 +59,7 @@ def checkDuplicate(stuID:str, delimiter:str = ","):
                 return True
     return False
 
+#Get the longest length of string in each column
 def lookforLongest(delimiter:str = ","):
     longest = [0,0,0,0,0,0]
     with open("./student.csv", "r") as f:
@@ -66,7 +70,7 @@ def lookforLongest(delimiter:str = ","):
                     longest[i] = len(args[i])
     return longest
 
-
+#Serial input like since the practical asked for it
 def consecutive_input(n:int):
     list_of_students = []
     for i in range(n):
@@ -76,7 +80,7 @@ def consecutive_input(n:int):
         list_of_students.append([stuID,name, dob,courseId,courseName, courseMark])
     return list_of_students
 
-
+#Write to file
 def write_info(name:str, stuID:str, dob:str,courseID:str, courseName:str, courseMark:str, delimiter:str = ","):
     if(os.path.exists("./student.csv")):
         with open("./student.csv", "a") as f:
@@ -90,6 +94,7 @@ def write_info(name:str, stuID:str, dob:str,courseID:str, courseName:str, course
             ls = [stuID, name, dob,courseID,courseName, courseMark]
             f.write(delimiter.join(ls) + "\n")
 
+#Drawing the table
 def disp(delimiter:str = ","):
     print("\n\n\n")
     if(os.path.exists("./student.csv")):
@@ -115,15 +120,17 @@ def disp(delimiter:str = ","):
             f.write(delimiter.join(ls)+ "\n")
     print("\n\n\n")
 
+
+#Inspecting student's info and courses mark
 def inspectStudent(stuID:str, delimiter:str = ","):
     print("\n\n\n")
     if(os.path.exists("./student.csv")):
         name,dob = getName(stuID)
-        print("+"+"-"*30+"+")
-        print("Student ID: " + stuID)
-        print("Name: " + name + "|")
-        print("Date of Birth: " + dob)
-        print("+"+"-"*30+"+")
+        print("+"+"-"*50+"+")
+        print("| Student ID: " + stuID)
+        print("| Name: " + name )
+        print("| Date of Birth: " + dob)
+        print("+"+"-"*50+"+")
         with open("./student.csv", "r") as f:
             for line in f:
                 args = line.split(delimiter)
@@ -132,10 +139,11 @@ def inspectStudent(stuID:str, delimiter:str = ","):
                     print(f"+----Course Name: {args[4]}")
                     print("|\t|")
                     print(f"|\t+----Course ID: {args[3]}")
-                    print("|\t\t|")
-                    print(f"|\t\t+----Course Mark: {args[5]}", end="")
+                    print("|\t|")
+                    print(f"|\t+----Course Mark: {args[5]}", end="")
     print("\n\n\n")
 
+#Interface
 def main():
     delimiter = check_for_Delimiter() if check_for_Delimiter() else ","
     choice = ["Input student's information", "Print student's information", "Set delimiter", "Enter with specify an amount of students","Remove data" ,"Inspect Student", "Exit"]
@@ -180,6 +188,8 @@ def main():
 
 if __name__ == "__main__":
     try:
+        os.system("cls" if os.name == "nt" else "clear")
+        print("Welcome to the student management system!")
         main()
     except KeyboardInterrupt:
         print("\nProgram has been terminated!")
