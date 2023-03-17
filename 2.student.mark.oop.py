@@ -1,7 +1,94 @@
 import os
 
+# Blueprint for a course
+class Course:
+    def __init__(self, courseID:str, courseName:str, courseMark:str, studentID:str):
+        self.__courseID = courseID
+        self.__courseName = courseName
+        self.__studentList = []
+        self.__studentList.append([studentID,courseMark])
+
+    def _getCourseID(self):
+        return self.__courseID
+
+    def _getCourseName(self):
+        return self.__courseName
+
+    def _getCourseMark(self, stuID:str):
+        for student in self.__studentList:
+            if student[0] == stuID:
+                return student[1]
+            
+    def _getListMark(self):
+        return self.__studentList
+
+    def setCourseMark(self, stuID, courseMark):
+        if not any(stuID in sublist for sublist in self.__studentList):
+            return None
+        else:
+            for student in self.__studentList:
+                if student[0] == stuID:
+                    student[1] = courseMark
+
+    def addStudent(self, studentID, courseMark):
+        self.__studentList.append([studentID,courseMark])
+
+# Any person has these
+class Person:
+    def __init__(self,name:str ,dob:str):
+        self.__name = name
+        self.__dob = dob
+    def _getName(self):
+        return self.__name
+    def _getDob(self):
+        return self.__dob
+    def setName(self, name):
+            self.__name = name
+    def setDob(self, dob):
+            self.__dob = dob
+
+# Blueprint for a students
+class Student(Person):
+    def __init__(self, stuID:str, name:str, dob:str, Course:Course):
+        super().__init__(name,dob)                
+        self.__stuID = stuID
+        self.__courseList = []
+        self.__courseList.append(Course)
+    def _getStuID(self):
+        return self.__stuID
+    def _getCourseList(self):
+        return self.__courseList
+    def addCourse(self, courseList):
+        self.__courseList = self.__courseList.append(courseList)
+    def setStuID(self, stuID):
+        self._stuID = stuID
+    def _getLastMark(self):
+        return self.__courseList[-1]._getCourseMark(self.__stuID)
+
+#Load saved data
+def loadData():
+    delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
+    studentList = []
+    with open("./student.csv", "r") as f:
+        f.readline()
+        for line in f:
+            args = line.split(delimiter)
+            #remove the \n at the end of the line
+            args[5] = args[5][:-1]
+            if args[0] == "Student ID":
+                continue
+            stuID = args[0]
+            name = args[1]
+            dob = args[2]
+            courseId = args[3]
+            courseName = args[4]
+            courseMark = args[5]
+            studentList.append(Student(stuID, name, dob, Course(courseId, courseName, courseMark,stuID)))
+
+    return studentList
+
 #This function actually get and return both name and date of birth
-def getName(stuID:str, delimiter:str = ","):
+def getPerCSV(stuID:str, delimiter:str = ","):
     if(os.path.exists("./student.csv") == False):
         return None
     with open("./student.csv", "r") as f:
@@ -28,22 +115,22 @@ def input_info():
     stuID = input("Enter student ID: ")
     delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
     if checkDuplicate(stuID):
-        name,dob = getName(stuID)
+        name,dob = getPerCSV(stuID)
         courseId = input("Enter course ID: ")
         while dupcourseCheck(stuID,courseId,delimiter):
             print("Duplicate course ID")
             courseId = input("Re-enter course ID: ")
         courseName = input("Enter course name: ")
         courseMark = input("Enter course mark: ")
-        return stuID, name, dob, courseId, courseName, courseMark
+        return Student(stuID, name, dob, Course(courseId, courseName, courseMark,stuID))
     else:
         name = input("Enter student name: ")
         dob = input("Enter student date of birth: ")
         courseId = input("Enter course ID: ")
         courseName = input("Enter course name: ")
         courseMark = input("Enter course mark: ")
-        return stuID, name, dob, courseId, courseName, courseMark
-
+        return Student(stuID, name, dob, Course(courseId, courseName, courseMark,stuID))
+    
 #Check delimiter in file
 def check_for_Delimiter():
     if(os.path.exists("./student.csv")):
@@ -83,12 +170,12 @@ def lookforLongest(delimiter:str = ","):
     return longest
 
 #Serial input like since the practical asked for it
-def consecutive_input(n:int):
+def serial_input(n:int):
     list_of_students = []
     delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
     for i in range(n):
-        stuID, name, dob, courseId, courseName, courseMark = input_info()
-        list_of_students.append([stuID, name, dob, courseId, courseName, courseMark])
+        stdInstace = input_info()
+        list_of_students.append([stdInstace._getStuID(), stdInstace._getName(), stdInstace._getDob(), stdInstace._getCourseList()[-1]._getCourseID(), stdInstace._getCourseList()[-1]._getCourseName(), stdInstace._getLastMark()])
         write_info(list_of_students[i][1], list_of_students[i][0], list_of_students[i][2], list_of_students[i][3], list_of_students[i][4], list_of_students[i][5], delimiter)
 
 #Write to file student.csv
@@ -133,25 +220,29 @@ def disp(delimiter:str = ","):
 
 
 #Inspecting student's info and courses mark
-def inspectStudent(stuID:str, delimiter:str = ","):
+def inspectStudent(stuID:str):
     print("\n\n\n")
-    if(os.path.exists("./student.csv")):
-        name,dob = getName(stuID)
-        print("+"+"-"*50+"+")
-        print("| Student ID: " + stuID)
-        print("| Name: " + name )
-        print("| Date of Birth: " + dob)
-        print("+"+"-"*50+"+")
-        with open("./student.csv", "r") as f:
-            for line in f:
-                args = line.split(delimiter)
-                if args[0] == stuID:
-                    print("|")
-                    print(f"+----Course Name: {args[4]}")
-                    print("|\t|")
-                    print(f"|\t+----Course ID: {args[3]}")
-                    print("|\t|")
-                    print(f"|\t+----Course Mark: {args[5]}", end="")
+    stuLis = loadData()
+    for student in stuLis:
+        if student._getStuID() == stuID:
+            name = student._getName()
+            dob = student._getDob()
+    print("+"+"-"*50+"+")
+    print("| Student ID: " + stuID)
+    print("| Name: " + name )
+    print("| Date of Birth: " + dob)
+    print("+"+"-"*50+"+")
+    for student in stuLis:
+        if student._getStuID() == stuID:
+            name = student._getName()
+            dob = student._getDob()
+            for course in student._getCourseList():
+                print("|")
+                print(f"+----Course Name: {course._getCourseName()}")
+                print("|\t|")
+                print(f"|\t+----Course ID: {course._getCourseID()}")
+                print("|\t|")
+                print(f"|\t+----Course Mark: {course._getCourseMark(stuID)}")
     print("\n\n\n")
 
 #Interface
@@ -165,8 +256,10 @@ def main():
         print("Please choose an option: ", end="")
         option = input()
         if(option == "1"):
-            stuID, name, dob, courseID,courseName, courseMark = input_info()
-            write_info(name, stuID, dob,courseID,courseName,courseMark, delimiter)
+            stdInstance = input_info()
+            lastCourse = (stdInstance._getCourseList())[-1]
+            stuID = stdInstance._getStuID()[:]
+            write_info(stdInstance._getName(), stdInstance._getStuID(), stdInstance._getDob(), lastCourse._getCourseID(), lastCourse._getCourseName(), lastCourse._getCourseMark(stdInstance._getStuID()), delimiter)
         elif(option == "2"):
             disp(delimiter)
         elif(option == "3"):
@@ -177,7 +270,7 @@ def main():
                 delimiter = input("Please input the delimiter (default is ,): ")
         elif(option == "4"):
             amount = int(input("Please input the amount of students: "))
-            consecutive_input(amount)
+            serial_input(amount)
         elif(option == "5"):
             if os.path.exists("./student.csv"):
                 os.remove("./student.csv")
@@ -186,7 +279,7 @@ def main():
                 print("The file does not exist!")
         elif(option == "6"):
             stuID = input("Please input the student ID: ")
-            inspectStudent(stuID, delimiter)
+            inspectStudent(stuID)
         elif(option == "7"):
             yn = "n"
         else:
@@ -200,4 +293,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nProgram has been terminated!")
     finally:
-        print("Goodbye!")
+        print("Program exited!")
+
