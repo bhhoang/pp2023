@@ -1,203 +1,265 @@
-import os
+# student_info = dict.fromkeys(['student_id', 'name', 'dob', 'courses'], [])
+# course_info = dict.fromkeys(['course_id', 'course_name', 'course_mark'], [])
+list_of_students: list[dict] = list()
+list_of_course: list[dict] = list()
 
-#This function actually get and return both name and date of birth
-def getName(stuID:str, delimiter:str = ","):
-    if(os.path.exists("./student.csv") == False):
-        return None
-    with open("./student.csv", "r") as f:
-        for line in f:
-            args = line.split(delimiter)
-            if args[0] == stuID:
-                return args[1], args[2]
-    return None
 
-#Check duplicate course
-def dupcourseCheck(stuID:str, courseId:str, delimiter:str = ","):
-    if(os.path.exists("./student.csv") == False):
-        return False
-    with open("./student.csv", "r") as f:
-        for line in f:
-            args = line.split(delimiter)
-            if args[0] == stuID and args[3] == courseId:
-                return True
-    return False
+def student_info(student_id: str, name: str, dob: str, courses: list) -> dict:
+    """
+    :param student_id: student ID
+    :param name: student name
+    :param dob: student date of birth
+    :param courses: list of courses
+    :return: student information as a dictionary
+    """
+    keys: list[str] = ["student_id", "name", "dob", "courses"]
+    student_info: dict[str] = dict.fromkeys(keys, [])
+    student_info["student_id"] = student_id
+    student_info["name"] = name
+    student_info["dob"] = dob
+    student_info["courses"] = courses
+    return student_info
 
-# Single input student block
-def input_info():
-    courseId, courseName, stuID, courseMark = "","","",""
-    stuID = input("Enter student ID: ")
-    delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
-    if checkDuplicate(stuID):
-        name,dob = getName(stuID)
-        courseId = input("Enter course ID: ")
-        while dupcourseCheck(stuID,courseId,delimiter):
-            print("Duplicate course ID")
-            courseId = input("Re-enter course ID: ")
-        courseName = input("Enter course name: ")
-        courseMark = input("Enter course mark: ")
-        return stuID, name, dob, courseId, courseName, courseMark
-    else:
+
+def course_info(
+    course_id: str,
+    course_name: str,
+    course_mark: float,
+    ects: int,
+    enrolled_student: list[str] = [],
+) -> dict:
+    """
+    :param course_id: course ID
+    :param course_name: course name
+    :param course_mark: course mark
+    :param ects: course ECTS
+    :param enrolled_student: list of enrolled students id
+    :return: course information as a dictionary
+    """
+    course_info = dict.fromkeys(
+        ["course_id", "course_name", "course_mark", "ects", "enrolled_student"], []
+    )
+    course_info["course_id"] = course_id
+    course_info["course_name"] = course_name
+    course_info["course_mark"] = course_mark
+    course_info["ects"] = ects
+    course_info["enrolled_student"] = enrolled_student
+    return course_info
+
+
+def input_info() -> bool:
+    n = int(input("Enter number of students: "))
+    for i in range(n):
+        student_id = input("Enter student ID: ")
         name = input("Enter student name: ")
         dob = input("Enter student date of birth: ")
-        courseId = input("Enter course ID: ")
-        courseName = input("Enter course name: ")
-        courseMark = input("Enter course mark: ")
-        return stuID, name, dob, courseId, courseName, courseMark
+        courses = []
+        m = int(input("Enter number of courses: "))
+        for j in range(m):
+            course_id = input("Enter course ID: ")
+            course_name = input("Enter course name: ")
+            course_mark = float(input("Enter course mark: "))
+            ects = int(input("Enter course ECTS: "))
+            courses.append(course_info(course_id, course_name, course_mark, ects))
+        list_of_students.append(student_info(student_id, name, dob, courses))
+    return True
 
-#Check delimiter in file
-def check_for_Delimiter():
-    if(os.path.exists("./student.csv")):
-        with open("./student.csv", "r") as f:
-            line = f.readline()
-            idx1 = line.find("Student ID")
-            idx2 = line.find("Name")
-            if idx1 != -1 and idx2 != -1:
-                idx1 = idx1 + len("Student ID")
-                return line[idx1:idx2].strip()
-            else:
-                return False
-    else:
-        return False
 
-#Check duplicate student
-def checkDuplicate(stuID:str, delimiter:str = ","):
-    if(os.path.exists("./student.csv") == False):
-        return False
-    with open("./student.csv", "r") as f:
-        for line in f:
-            args = line.split(delimiter)
-            if args[0] == stuID:
-                return True
+def remove_student(student_id: str) -> bool:
+    for student in list_of_students:
+        if student["student_id"] == student_id:
+            list_of_students.remove(student)
+            return True
+    print("Student ID not found")
     return False
 
 
-#Get the longest length of string in each column
-def lookforLongest(delimiter:str = ","):
-    longest = [0,0,0,0,0,0]
-    with open("./student.csv", "r") as f:
-        for line in f:
-            args = line.split(delimiter)
-            for i in range(len(longest)):
-                if len(args[i]) > longest[i]:
-                    longest[i] = len(args[i])
-    return longest
-
-#Serial input like since the practical asked for it
-def consecutive_input(n:int):
-    list_of_students = []
-    delimiter = "," if check_for_Delimiter() == False else check_for_Delimiter()
-    for i in range(n):
-        stuID, name, dob, courseId, courseName, courseMark = input_info()
-        list_of_students.append([stuID, name, dob, courseId, courseName, courseMark])
-        write_info(list_of_students[i][1], list_of_students[i][0], list_of_students[i][2], list_of_students[i][3], list_of_students[i][4], list_of_students[i][5], delimiter)
-
-#Write to file student.csv
-def write_info(name:str, stuID:str, dob:str,courseID:str, courseName:str, courseMark:str, delimiter:str = ","):
-    if(os.path.exists("./student.csv")):
-        with open("./student.csv", "a") as f:
-            ls = [stuID, name, dob,courseID,courseName,courseMark]
-            f.write(delimiter.join(ls) + "\n")
-    else:
-        print("File students.csv not found in current working directory, creating one...")
-        with open("./student.csv", "w") as f:
-            ls = ["Student ID", "Name", "Date of Birth","Course ID","Course Name","Course Mark"]
-            f.write(delimiter.join(ls)+ "\n")
-            ls = [stuID, name, dob,courseID,courseName, courseMark]
-            f.write(delimiter.join(ls) + "\n")
-
-#Drawing the table
-def disp(delimiter:str = ","):
-    print("\n\n\n")
-    if(os.path.exists("./student.csv")):
-        longest = lookforLongest()
-        with open("./student.csv", "r") as f:
-            first_line = f.readline()
-            args = first_line.split(delimiter)
-            #remove the newline character
-            args[5] = args[5][:-1]
-            print("+ "+"-"*(longest[0]+longest[1]+longest[2]+longest[3]+longest[4]+longest[5]+39)+" +")
-            print ("| " + args[0].ljust(longest[0]+4) + " | " + args[1].ljust(longest[1]+4) + " | " + args[2].ljust(longest[2]+4)+ " | " + args[3].ljust(longest[3]+4) + " | " + args[4].ljust(longest[4]+4)+" | " + args[5].ljust(longest[5]+4) + " |")
-            print ("+ " + "-"*(longest[0]+4) + " + " + "-"*(longest[1] + 4) + " + " + "-"*(longest[2]+4) + " + " + "-"*(longest[3]+4) + " + " + "-"*(longest[4]+4)+ " + " + "-"*(longest[5]+4)+" +")
-            for line in f:
-                args = line.split(delimiter)
-                #draw table border and datas
-                args[5] = args[5][:-1]
-                print ("| " + args[0].ljust(longest[0]+4) + " | " + args[1].ljust(longest[1]+4) + " | " + args[2].ljust(longest[2]+4)+ " | " + args[3].ljust(longest[3]+4) + " | " + args[4].ljust(longest[4]+4)+" | "+ args[5].ljust(longest[5]+4)+" |")
-                print("+ "+"-"*(longest[0]+longest[1]+longest[2]+longest[3]+longest[4]+longest[5]+39)+" +")
-    else:
-        print("File students.csv not found in current working directory, creating one...")
-        with open("./student.csv", "w") as f:
-            ls = ["Student ID", "Name", "Date of Birth","Course ID", "Course Name", "Course Mark"]
-            f.write(delimiter.join(ls)+ "\n")
-    print("\n\n\n")
+def course_enroll(student_id: str, course_id: str) -> bool:
+    for course in list_of_course:
+        if course["course_id"] == course_id:
+            course["enrolled_student"].append(student_id)
+    for student in list_of_students:
+        if student["student_id"] == student_id:
+            for course in student["courses"]:
+                if course["course_id"] == course_id:
+                    print("Duplicate course ID")
+                    return False
+            course_name = input("Enter course name: ")
+            course_mark = float(input("Enter course mark: "))
+            ects = int(input("Enter course ECTS: "))
+            student["courses"].append(
+                course_info(course_id, course_name, course_mark, ects)
+            )
+    print("Student ID not found")
+    return False
 
 
-#Inspecting student's info and courses mark
-def inspectStudent(stuID:str, delimiter:str = ","):
-    print("\n\n\n")
-    if(os.path.exists("./student.csv")):
-        name,dob = getName(stuID)
-        print("+"+"-"*50+"+")
-        print("| Student ID: " + stuID)
-        print("| Name: " + name )
-        print("| Date of Birth: " + dob)
-        print("+"+"-"*50+"+")
-        with open("./student.csv", "r") as f:
-            for line in f:
-                args = line.split(delimiter)
-                if args[0] == stuID:
-                    print("|")
-                    print(f"+----Course Name: {args[4]}")
-                    print("|\t|")
-                    print(f"|\t+----Course ID: {args[3]}")
-                    print("|\t|")
-                    print(f"|\t+----Course Mark: {args[5]}", end="")
-    print("\n\n\n")
+def course_unenroll(student_id: str, course_id: str) -> bool:
+    for course in list_of_course:
+        if course["course_id"] == course_id:
+            course["enrolled_student"].remove(student_id)
+    for student in list_of_students:
+        if student["student_id"] == student_id:
+            for course in student["courses"]:
+                if course["course_id"] == course_id:
+                    student["courses"].remove(course)
+                    return True
+            print("Course ID not found")
+            return False
+    print("Student ID not found")
+    return False
 
-#Interface
+
+def add_course(
+    course_id: str,
+    course_name: str,
+    course_mark: float,
+    ects: int,
+    list_students: list[str] = [],
+) -> bool:
+    for course in list_of_course:
+        if course["course_id"] == course_id:
+            print("Duplicate course ID")
+            return False
+    list_of_course.append(
+        course_info(course_id, course_name, course_mark, ects, list_students)
+    )
+    return True
+
+
+def remove_course(course_id: str) -> bool:
+    for course in list_of_course:
+        if course["course_id"] == course_id:
+            list_of_course.remove(course)
+            return True
+    print("Course ID not found")
+    return False
+
+
+def inspect_student(student_id: str) -> bool:
+    for student in list_of_students:
+        if student["student_id"] == student_id:
+            print("+" + "-" * 50 + "+")
+            print("| Student ID: " + student["student_id"])
+            print("| Name: " + student["name"])
+            print("| Date of Birth: " + student["dob"])
+            print("+" + "-" * 50 + "+")
+            for course in student["courses"]:
+                print("|")
+                print(f"+----Course Name: {course['course_name']}")
+                print("|\t|")
+                print(f"|\t+----Course ID: {course['course_id']}")
+                print("|\t|")
+                print(f"|\t+----Course Mark: {course['course_mark']}", end="")
+            return True
+    print("Student ID not found")
+    return False
+
+
+def inspect_course(course_id: str) -> bool:
+    for course in list_of_course:
+        if course["course_id"] == course_id:
+            print("+" + "-" * 50 + "+")
+            print("| Course ID: " + course["course_id"])
+            print("| Course Name: " + course["course_name"])
+            print("| Course Mark: " + course["course_mark"])
+            print("| ECTS: " + course["ects"])
+            print("+" + "-" * 50 + "+")
+            for student in course["enrolled_student"]:
+                print("|")
+                print(f"+----Student ID: {student['student_id']}")
+                print("|\t|")
+                print(f"|\t+----Student Name: {student['name']}")
+                print("|\t|")
+                print(f"|\t+----Student DOB: {student['dob']}", end="")
+            return True
+
+
+def inspect_all_student() -> bool:
+    for student in list_of_students:
+        print("+" + "-" * 50 + "+")
+        print("| Student ID: " + student["student_id"])
+        print("| Name: " + student["name"])
+        print("| Date of Birth: " + student["dob"])
+        print("+" + "-" * 50 + "+")
+        for course in student["courses"]:
+            print("|")
+            print(f"+----Course Name: {course['course_name']}")
+            print("|\t|")
+            print(f"|\t+----Course ID: {course['course_id']}")
+            print("|\t|")
+            print(f"|\t+----Course Mark: {course['course_mark']}", end="")
+        print("\n\n")
+    return True
+
+
+def inspect_all_course() -> bool:
+    for course in list_of_course:
+        print("+" + "-" * 50 + "+")
+        print("| Course ID: " + course["course_id"])
+        print("| Course Name: " + course["course_name"])
+        print("| Course Mark: " + course["course_mark"])
+        print("| ECTS: " + course["ects"])
+        print("+" + "-" * 50 + "+")
+        for student in course["enrolled_student"]:
+            print("|")
+            print(f"+----Student ID: {student['student_id']}")
+            print("|\t|")
+            print(f"|\t+----Student Name: {student['name']}")
+            print("|\t|")
+            print(f"|\t+----Student DOB: {student['dob']}", end="")
+        print("\n\n")
+    return True
+
+
 def main():
-    delimiter = check_for_Delimiter() if check_for_Delimiter() else ","
-    choice = ["Input student's information", "Print student's information", "Set delimiter", "Enter with specify an amount of students","Remove data" ,"Inspect Student", "Exit"]
-    yn = "y"
-    while(yn == "y"):
-        for i in range(len(choice)):
-            print(f"{i+1}. {choice[i]}")
-        print("Please choose an option: ", end="")
-        option = input()
-        if(option == "1"):
-            stuID, name, dob, courseID,courseName, courseMark = input_info()
-            write_info(name, stuID, dob,courseID,courseName,courseMark, delimiter)
-        elif(option == "2"):
-            disp(delimiter)
-        elif(option == "3"):
-            if(check_for_Delimiter()):
-                delimiter = check_for_Delimiter()
-                print(f"The student file has already got delimiter which is {delimiter}")
-            else:
-                delimiter = input("Please input the delimiter (default is ,): ")
-        elif(option == "4"):
-            amount = int(input("Please input the amount of students: "))
-            consecutive_input(amount)
-        elif(option == "5"):
-            if os.path.exists("./student.csv"):
-                os.remove("./student.csv")
-                print("The file has been removed!")
-            else:
-                print("The file does not exist!")
-        elif(option == "6"):
-            stuID = input("Please input the student ID: ")
-            inspectStudent(stuID, delimiter)
-        elif(option == "7"):
-            yn = "n"
+    choice = [
+        "1. Add student",
+        "2. Remove student",
+        "3. Enroll course",
+        "4. Unenroll course",
+        "5. Add course",
+        "6. Remove course",
+        "7. Inspect student",
+        "8. Inspect course",
+        "9. Inspect all student",
+        "10. Inspect all course",
+        "11. Exit",
+    ]
+    while True:
+        for i in choice:
+            print(i)
+        option = int(input("Enter your choice: "))
+        if option == 1:
+            input_info()
+        elif option == 2:
+            remove_student(input("Enter student ID: "))
+        elif option == 3:
+            course_enroll(input("Enter student ID: "), input("Enter course ID: "))
+        elif option == 4:
+            course_unenroll(input("Enter student ID: "), input("Enter course ID: "))
+        elif option == 5:
+            add_course(
+                input("Enter course ID: "),
+                input("Enter course name: "),
+                float(input("Enter course mark: ")),
+                int(input("Enter course ECTS: ")),
+            )
+        elif option == 6:
+            remove_course(input("Enter course ID: "))
+        elif option == 7:
+            inspect_student(input("Enter student ID: "))
+        elif option == 8:
+            inspect_course(input("Enter course ID: "))
+        elif option == 9:
+            inspect_all_student()
+        elif option == 10:
+            inspect_all_course()
+        elif option == 11:
+            break
         else:
-            print("Invalid option")
+            print("Invalid choice")
+
 
 if __name__ == "__main__":
-    try:
-        os.system("cls" if os.name == "nt" else "clear")
-        print("Welcome to the student management system!")
-        main()
-    except KeyboardInterrupt:
-        print("\nProgram has been terminated!")
-    finally:
-        print("Goodbye!")
+    main()
